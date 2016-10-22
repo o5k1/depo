@@ -1,0 +1,942 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: billing_info; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE billing_info (
+    id integer NOT NULL,
+    type smallint NOT NULL,
+    name character varying(100) DEFAULT NULL::character varying,
+    surname character varying(100) DEFAULT NULL::character varying,
+    business_name character varying(150) DEFAULT NULL::character varying,
+    country character varying(100) NOT NULL,
+    address character varying(200) NOT NULL,
+    telephone character varying(50) NOT NULL,
+    vat character varying(100) DEFAULT NULL::character varying,
+    tax_code character varying(50) DEFAULT NULL::character varying,
+    created timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    updated timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.billing_info OWNER TO wethod;
+
+--
+-- Name: COLUMN billing_info.type; Type: COMMENT; Schema: public; Owner: wethod
+--
+
+COMMENT ON COLUMN billing_info.type IS '0 = private, 1 = company';
+
+
+--
+-- Name: company; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE company (
+    id integer NOT NULL,
+    billing_info integer,
+    name character varying(50) NOT NULL,
+    schema character varying(50) NOT NULL,
+    endpoint character varying(50) NOT NULL,
+    created timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    updated timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.company OWNER TO wethod;
+
+--
+-- Name: company_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE company_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.company_id_seq OWNER TO wethod;
+
+--
+-- Name: company_integration; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE company_integration (
+    id integer NOT NULL,
+    company integer,
+    integration_module integer,
+    integration_token integer,
+    enabled boolean NOT NULL,
+    created timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    updated timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.company_integration OWNER TO wethod;
+
+--
+-- Name: company_integration_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE company_integration_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.company_integration_id_seq OWNER TO wethod;
+
+--
+-- Name: integration_module; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE integration_module (
+    id integer NOT NULL,
+    key character varying(100) NOT NULL,
+    endpoint character varying(255) NOT NULL,
+    config text NOT NULL,
+    public boolean NOT NULL,
+    created timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    updated timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.integration_module OWNER TO wethod;
+
+--
+-- Name: COLUMN integration_module.config; Type: COMMENT; Schema: public; Owner: wethod
+--
+
+COMMENT ON COLUMN integration_module.config IS '(DC2Type:json_array)';
+
+
+--
+-- Name: integration_module_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE integration_module_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.integration_module_id_seq OWNER TO wethod;
+
+--
+-- Name: integration_token; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE integration_token (
+    id integer NOT NULL,
+    token character varying(150) NOT NULL,
+    valid boolean NOT NULL,
+    created timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    updated timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.integration_token OWNER TO wethod;
+
+--
+-- Name: integration_token_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE integration_token_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.integration_token_id_seq OWNER TO wethod;
+
+--
+-- Name: invitation; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE invitation (
+    code character varying(12) NOT NULL,
+    usr_id integer,
+    company_id integer,
+    email character varying(100) NOT NULL,
+    sent timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    role character varying(50) NOT NULL,
+    level integer NOT NULL
+);
+
+
+ALTER TABLE public.invitation OWNER TO wethod;
+
+--
+-- Name: invoice; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE invoice (
+    id integer NOT NULL,
+    company_id integer,
+    number integer NOT NULL,
+    year integer NOT NULL,
+    quantity integer NOT NULL,
+    item_price double precision NOT NULL,
+    vat double precision NOT NULL,
+    discount double precision,
+    stripe_invoice character varying(255) NOT NULL,
+    stripe_customer character varying(255) NOT NULL,
+    created timestamp(0) without time zone NOT NULL,
+    updated timestamp(0) without time zone NOT NULL
+);
+
+
+ALTER TABLE public.invoice OWNER TO wethod;
+
+--
+-- Name: invoice_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE invoice_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.invoice_id_seq OWNER TO wethod;
+
+--
+-- Name: payment; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE payment (
+    id integer NOT NULL,
+    company integer,
+    customer character varying(250) DEFAULT NULL::character varying,
+    active_until timestamp(0) without time zone NOT NULL,
+    created timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    updated timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.payment OWNER TO wethod;
+
+--
+-- Name: payment_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE payment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.payment_id_seq OWNER TO wethod;
+
+--
+-- Name: sessions; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE sessions (
+    sess_id character varying(128) NOT NULL,
+    sess_data bytea NOT NULL,
+    sess_time integer NOT NULL,
+    sess_lifetime integer NOT NULL
+);
+
+
+ALTER TABLE public.sessions OWNER TO wethod;
+
+--
+-- Name: sessions_sess_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE sessions_sess_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.sessions_sess_id_seq OWNER TO wethod;
+
+--
+-- Name: usr; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE usr (
+    id integer NOT NULL,
+    username character varying(255) NOT NULL,
+    username_canonical character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
+    email_canonical character varying(255) NOT NULL,
+    enabled boolean NOT NULL,
+    salt character varying(255) NOT NULL,
+    password character varying(255) NOT NULL,
+    last_login timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    locked boolean NOT NULL,
+    expired boolean NOT NULL,
+    expires_at timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    confirmation_token character varying(255) DEFAULT NULL::character varying,
+    password_requested_at timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+    roles text NOT NULL,
+    credentials_expired boolean NOT NULL,
+    credentials_expire_at timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.usr OWNER TO wethod;
+
+--
+-- Name: COLUMN usr.roles; Type: COMMENT; Schema: public; Owner: wethod
+--
+
+COMMENT ON COLUMN usr.roles IS '(DC2Type:array)';
+
+
+--
+-- Name: usr_company; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE usr_company (
+    id integer NOT NULL,
+    company_id integer,
+    usr_id integer,
+    is_owner boolean DEFAULT false NOT NULL,
+    status smallint DEFAULT 0::smallint NOT NULL,
+    last_activity timestamp(0) without time zone DEFAULT NULL::timestamp without time zone
+);
+
+
+ALTER TABLE public.usr_company OWNER TO wethod;
+
+--
+-- Name: COLUMN usr_company.status; Type: COMMENT; Schema: public; Owner: wethod
+--
+
+COMMENT ON COLUMN usr_company.status IS '0 = active, 1 = archived';
+
+
+--
+-- Name: usr_company_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE usr_company_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.usr_company_id_seq OWNER TO wethod;
+
+--
+-- Name: usr_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE usr_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.usr_id_seq OWNER TO wethod;
+
+--
+-- Name: widget; Type: TABLE; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE TABLE widget (
+    id integer NOT NULL,
+    endpoint text NOT NULL,
+    config text NOT NULL,
+    default_config text NOT NULL,
+    key character varying(50) NOT NULL,
+    hidden boolean DEFAULT false NOT NULL,
+    can_be_deleted boolean DEFAULT true NOT NULL,
+    "default" boolean DEFAULT false NOT NULL,
+    label character varying(50) NOT NULL,
+    created timestamp(0) without time zone NOT NULL,
+    updated timestamp(0) without time zone NOT NULL
+);
+
+
+ALTER TABLE public.widget OWNER TO wethod;
+
+--
+-- Name: COLUMN widget.config; Type: COMMENT; Schema: public; Owner: wethod
+--
+
+COMMENT ON COLUMN widget.config IS '(DC2Type:json_array)';
+
+
+--
+-- Name: COLUMN widget.default_config; Type: COMMENT; Schema: public; Owner: wethod
+--
+
+COMMENT ON COLUMN widget.default_config IS '(DC2Type:json_array)';
+
+
+--
+-- Name: widget_id_seq; Type: SEQUENCE; Schema: public; Owner: wethod
+--
+
+CREATE SEQUENCE widget_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.widget_id_seq OWNER TO wethod;
+
+--
+-- Data for Name: billing_info; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY billing_info (id, type, name, surname, business_name, country, address, telephone, vat, tax_code, created, updated) FROM stdin;
+\.
+
+
+--
+-- Data for Name: company; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY company (id, billing_info, name, schema, endpoint, created, updated) FROM stdin;
+2	\N	wethod	wethodschema	localhost	2016-10-18 10:38:50	2016-10-18 10:38:50
+1000	\N	da_dump	digitalaccademiaschema	localhost	2016-10-18 10:45:47	2016-10-18 10:45:47
+\.
+
+
+--
+-- Name: company_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('company_id_seq', 2, true);
+
+
+--
+-- Data for Name: company_integration; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY company_integration (id, company, integration_module, integration_token, enabled, created, updated) FROM stdin;
+\.
+
+
+--
+-- Name: company_integration_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('company_integration_id_seq', 1, false);
+
+
+--
+-- Data for Name: integration_module; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY integration_module (id, key, endpoint, config, public, created, updated) FROM stdin;
+\.
+
+
+--
+-- Name: integration_module_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('integration_module_id_seq', 1, false);
+
+
+--
+-- Data for Name: integration_token; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY integration_token (id, token, valid, created, updated) FROM stdin;
+\.
+
+
+--
+-- Name: integration_token_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('integration_token_id_seq', 1, false);
+
+
+--
+-- Data for Name: invitation; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY invitation (code, usr_id, company_id, email, sent, role, level) FROM stdin;
+\.
+
+
+--
+-- Data for Name: invoice; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY invoice (id, company_id, number, year, quantity, item_price, vat, discount, stripe_invoice, stripe_customer, created, updated) FROM stdin;
+\.
+
+
+--
+-- Name: invoice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('invoice_id_seq', 1, false);
+
+
+--
+-- Data for Name: payment; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY payment (id, company, customer, active_until, created, updated) FROM stdin;
+1	2	cus_9OgUPxvsYvuqmC	2016-10-19 10:39:06	2016-10-18 10:39:06	2016-10-18 10:39:06
+2	1000	cus_9OigLTS9fvqzOx	2100-10-19 12:55:09	2016-10-18 12:55:09	2016-10-18 12:55:09
+\.
+
+
+--
+-- Name: payment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('payment_id_seq', 2, true);
+
+
+--
+-- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY sessions (sess_id, sess_data, sess_time, sess_lifetime) FROM stdin;
+travfo2lmblv41ero6s01g9t21	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:56:"http://10.10.8.8/web/app_dev.php/authentication/userinfo";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477034362;s:1:"c";i:1477034362;s:1:"l";s:1:"0";}	1477034370	1440
+uqact12qdegblqs3i00vdim580	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:33:"http://10.10.8.8/web/app_dev.php/";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1476889805;s:1:"c";i:1476889805;s:1:"l";s:1:"0";}	1476889806	1440
+fbr2hms9vegk2sm03d15l808r3	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:48:"http://10.10.8.8/web/app_dev.php/tutorial/status";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477034362;s:1:"c";i:1477034362;s:1:"l";s:1:"0";}	1477034370	1440
+l7idlvf870i296af8of3bb2664	_sf2_attributes|a:3:{s:18:"_csrf/authenticate";s:43:"-AdBIBqW8eq5v8fIcHYjM8ngPvTmL5DIzw8lj0rW95Y";s:22:"_security_web_firewall";s:850:"C:74:"Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\UsernamePasswordToken":762:{a:3:{i:0;N;i:1;s:12:"web_firewall";i:2;s:713:"a:4:{i:0;C:30:"Wethod\\\\AccessBundle\\\\Entity\\\\Usr":325:{a:13:{i:0;s:56:"eGvBieulyGy7g+B/uCBBywgWnGipX9wnRee0CZkntMM/FDv2YvVg4w==";i:1;s:31:"rqv9v664wfko448go0o44w88wg444sk";i:2;s:26:"tombolato.andrea@gmail.com";i:3;s:26:"tombolato.andrea@gmail.com";i:4;b:0;i:5;b:0;i:6;b:0;i:7;b:1;i:8;i:1;i:9;N;i:10;N;i:11;s:26:"tombolato.andrea@gmail.com";i:12;s:26:"tombolato.andrea@gmail.com";}}i:1;b:1;i:2;a:2:{i:0;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:28:"ROLE_SUPER_USER_WETHODSCHEMA";}i:1;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:38:"ROLE_SUPER_USER_DIGITALACCADEMIASCHEMA";}}i:3;a:0:{}}";}}";s:6:"schema";s:22:"digitalaccademiaschema";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477057556;s:1:"c";i:1477057193;s:1:"l";s:1:"0";}	1477057578	1440
+qsgq5porma9qjbu0aftivq0b64	_sf2_attributes|a:2:{s:18:"_csrf/authenticate";s:43:"9PyawjtL1EeMmIsafajSaJBaVEerNeYhiQeREKnDwkE";s:22:"_security_web_firewall";s:850:"C:74:"Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\UsernamePasswordToken":762:{a:3:{i:0;N;i:1;s:12:"web_firewall";i:2;s:713:"a:4:{i:0;C:30:"Wethod\\\\AccessBundle\\\\Entity\\\\Usr":325:{a:13:{i:0;s:56:"eGvBieulyGy7g+B/uCBBywgWnGipX9wnRee0CZkntMM/FDv2YvVg4w==";i:1;s:31:"rqv9v664wfko448go0o44w88wg444sk";i:2;s:26:"tombolato.andrea@gmail.com";i:3;s:26:"tombolato.andrea@gmail.com";i:4;b:0;i:5;b:0;i:6;b:0;i:7;b:1;i:8;i:1;i:9;N;i:10;N;i:11;s:26:"tombolato.andrea@gmail.com";i:12;s:26:"tombolato.andrea@gmail.com";}}i:1;b:1;i:2;a:2:{i:0;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:28:"ROLE_SUPER_USER_WETHODSCHEMA";}i:1;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:38:"ROLE_SUPER_USER_DIGITALACCADEMIASCHEMA";}}i:3;a:0:{}}";}}";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1476981820;s:1:"c";i:1476981820;s:1:"l";s:1:"0";}	1476981820	1440
+rv65ujknmvv2vuaqubca468vv1	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:69:"http://10.10.8.8/web/app_dev.php/message/?context=login&labels=friday";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477034362;s:1:"c";i:1477034362;s:1:"l";s:1:"0";}	1477034370	1440
+5k739n3kpqvpij0jjh5r530v92	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:67:"http://10.10.8.8/web/app_dev.php/message/?context=login&labels=song";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477058203;s:1:"c";i:1477058203;s:1:"l";s:1:"0";}	1477058206	1440
+4drg0o9unhn3dsivlhm2vqfap0	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:48:"http://10.10.8.8/web/app_dev.php/tutorial/status";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1476981861;s:1:"c";i:1476981861;s:1:"l";s:1:"0";}	1476981862	1440
+sbous1nuf7cmmskff12taom1r1	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:69:"http://10.10.8.8/web/app_dev.php/message/?context=login&labels=friday";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477034362;s:1:"c";i:1477034362;s:1:"l";s:1:"0";}	1477034370	1440
+up9g22i2akhdheotfa4l4ut696	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:69:"http://10.10.8.8/web/app_dev.php/message/?context=login&labels=friday";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477058203;s:1:"c";i:1477058203;s:1:"l";s:1:"0";}	1477058206	1440
+ue9okqjhs7i0gocdedsgbrlft7	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:56:"http://10.10.8.8/web/app_dev.php/authentication/userinfo";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477034362;s:1:"c";i:1477034362;s:1:"l";s:1:"0";}	1477034370	1440
+4e0q0dlgr1hpah4lek6u9ov1v5	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:67:"http://10.10.8.8/web/app_dev.php/message/?context=login&labels=song";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1476981861;s:1:"c";i:1476981861;s:1:"l";s:1:"0";}	1476981862	1440
+sththodlune0q1ni8oh60lu565	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:67:"http://10.10.8.8/web/app_dev.php/message/?context=login&labels=song";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477034362;s:1:"c";i:1477034362;s:1:"l";s:1:"0";}	1477034370	1440
+3clfopeqi7vuend10cqvu53dr0	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:56:"http://10.10.8.8/web/app_dev.php/authentication/userinfo";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477058203;s:1:"c";i:1477058203;s:1:"l";s:1:"0";}	1477058206	1440
+t13624bjjp6usk7ei1kai8cau4	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:71:"http://10.10.8.8/web/app_dev.php/message/?context=login&labels=thursday";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1476981861;s:1:"c";i:1476981861;s:1:"l";s:1:"0";}	1476981862	1440
+uik7936tbhetf8gupga9j57c66	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:48:"http://10.10.8.8/web/app_dev.php/tutorial/status";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477034362;s:1:"c";i:1477034362;s:1:"l";s:1:"0";}	1477034370	1440
+97ffs10g9m1j3d4qbfa73utuf6	_sf2_attributes|a:3:{s:18:"_csrf/authenticate";s:43:"KpCARdQzy7hSusNQ4A_X5ySAsapX049tbb1BjpQcOo0";s:22:"_security_web_firewall";s:850:"C:74:"Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\UsernamePasswordToken":762:{a:3:{i:0;N;i:1;s:12:"web_firewall";i:2;s:713:"a:4:{i:0;C:30:"Wethod\\\\AccessBundle\\\\Entity\\\\Usr":325:{a:13:{i:0;s:56:"eGvBieulyGy7g+B/uCBBywgWnGipX9wnRee0CZkntMM/FDv2YvVg4w==";i:1;s:31:"rqv9v664wfko448go0o44w88wg444sk";i:2;s:26:"tombolato.andrea@gmail.com";i:3;s:26:"tombolato.andrea@gmail.com";i:4;b:0;i:5;b:0;i:6;b:0;i:7;b:1;i:8;i:1;i:9;N;i:10;N;i:11;s:26:"tombolato.andrea@gmail.com";i:12;s:26:"tombolato.andrea@gmail.com";}}i:1;b:1;i:2;a:2:{i:0;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:28:"ROLE_SUPER_USER_WETHODSCHEMA";}i:1;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:38:"ROLE_SUPER_USER_DIGITALACCADEMIASCHEMA";}}i:3;a:0:{}}";}}";s:6:"schema";s:12:"wethodschema";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1476981995;s:1:"c";i:1476981883;s:1:"l";s:1:"0";}	1476981996	1440
+t56spbbhni3tgts59mk28uveg3	_sf2_attributes|a:3:{s:18:"_csrf/authenticate";s:43:"45OFMPED5uuynz_58JWoAt272_V7jyy_7sCIWQPSO2s";s:22:"_security_web_firewall";s:850:"C:74:"Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\UsernamePasswordToken":762:{a:3:{i:0;N;i:1;s:12:"web_firewall";i:2;s:713:"a:4:{i:0;C:30:"Wethod\\\\AccessBundle\\\\Entity\\\\Usr":325:{a:13:{i:0;s:56:"eGvBieulyGy7g+B/uCBBywgWnGipX9wnRee0CZkntMM/FDv2YvVg4w==";i:1;s:31:"rqv9v664wfko448go0o44w88wg444sk";i:2;s:26:"tombolato.andrea@gmail.com";i:3;s:26:"tombolato.andrea@gmail.com";i:4;b:0;i:5;b:0;i:6;b:0;i:7;b:1;i:8;i:1;i:9;N;i:10;N;i:11;s:26:"tombolato.andrea@gmail.com";i:12;s:26:"tombolato.andrea@gmail.com";}}i:1;b:1;i:2;a:2:{i:0;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:28:"ROLE_SUPER_USER_WETHODSCHEMA";}i:1;O:41:"Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role":1:{s:47:"\\000Symfony\\\\Component\\\\Security\\\\Core\\\\Role\\\\Role\\000role";s:38:"ROLE_SUPER_USER_DIGITALACCADEMIASCHEMA";}}i:3;a:0:{}}";}}";s:6:"schema";s:22:"digitalaccademiaschema";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1477068753;s:1:"c";i:1477067877;s:1:"l";s:1:"0";}	1477068754	1440
+heeqcuv2btdpcm7e49rsc82lf5	_sf2_attributes|a:1:{s:34:"_security.web_firewall.target_path";s:58:"http://10.10.8.8/web/app_dev.php/dashboard/how-many-alerts";}_sf2_flashes|a:0:{}_sf2_meta|a:3:{s:1:"u";i:1476791153;s:1:"c";i:1476791153;s:1:"l";s:1:"0";}	1476791154	1440
+\.
+
+
+--
+-- Name: sessions_sess_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('sessions_sess_id_seq', 1, false);
+
+
+--
+-- Data for Name: usr; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY usr (id, username, username_canonical, email, email_canonical, enabled, salt, password, last_login, locked, expired, expires_at, confirmation_token, password_requested_at, roles, credentials_expired, credentials_expire_at) FROM stdin;
+1	tombolato.andrea@gmail.com	tombolato.andrea@gmail.com	tombolato.andrea@gmail.com	tombolato.andrea@gmail.com	t	rqv9v664wfko448go0o44w88wg444sk	eGvBieulyGy7g+B/uCBBywgWnGipX9wnRee0CZkntMM/FDv2YvVg4w==	2016-10-21 18:37:57	f	f	\N	\N	\N	a:2:{i:0;s:28:"ROLE_SUPER_USER_WETHODSCHEMA";i:1;s:38:"ROLE_SUPER_USER_DIGITALACCADEMIASCHEMA";}	f	\N
+\.
+
+
+--
+-- Data for Name: usr_company; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY usr_company (id, company_id, usr_id, is_owner, status, last_activity) FROM stdin;
+2	2	1	t	0	2016-10-20 18:46:36
+1000	1000	1	t	0	2016-10-21 18:52:09
+\.
+
+
+--
+-- Name: usr_company_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('usr_company_id_seq', 2, true);
+
+
+--
+-- Name: usr_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('usr_id_seq', 1, true);
+
+
+--
+-- Data for Name: widget; Type: TABLE DATA; Schema: public; Owner: wethod
+--
+
+COPY widget (id, endpoint, config, default_config, key, hidden, can_be_deleted, "default", label, created, updated) FROM stdin;
+2	dashboard/user-widget/invoices	{"filters":["company overview","pm","account","client","project type"]}	{"size":{"x":1,"y":1},"active_filter":{"name":"company overview","value":null}}	invoices	f	t	f	Invoices	2016-04-01 16:54:51	2016-04-01 16:54:51
+4	report/	{"filters":["company overview","pm","account","client","project type"]}	{"size":{"x":1,"y":1},"active_filter":{"name":"company overview","value":null},"label":null}	bubbles	f	t	f	Bubbles / Status	2016-04-12 10:56:20	2016-04-12 10:56:20
+5	report/bubbles-invoice	{"filters":["company overview","pm","account","client","project type"]}	{"size":{"x":1,"y":1},"active_filter":{"name":"company overview","value":null},"label":null}	bubbles-invoice	f	t	f	Bubbles / Invoiced	2016-04-12 10:56:20	2016-04-12 10:56:20
+6	dashboard/user-widget/alert-overview	{}	{"size":{"x":1,"y":1}}	alert-overview	f	f	f	Alert Overview	2016-03-25 12:08:32	2016-03-25 12:08:32
+1	dashboard/user-widget/sales-funnel	{"filters":["company overview","pm","account","client","project type"]}	{"size":{"x":1,"y":1},"active_filter":{"name":"company overview","value":null},"target":null}	sales-funnel	f	t	f	Revenue Clock	2016-03-23 17:29:20	2016-03-23 17:29:20
+3	dashboard/user-widget/alert	{}	{"size":{"x":1,"y":1}}	alert	f	f	f	Alert	2016-03-25 12:08:32	2016-03-25 12:08:32
+7	dashboard/user-widget/sparkline-product	{"filters":["company overview","pm","account","client","project type"]}	{"size":{"x":1,"y":1},"active_filter":{"name":"company overview","value":null},"label":null}	sparkline-product	f	t	f	Productivity	2016-10-07 09:53:51	2016-10-07 09:53:51
+\.
+
+
+--
+-- Name: widget_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wethod
+--
+
+SELECT pg_catalog.setval('widget_id_seq', 1, false);
+
+
+--
+-- Name: billing_info_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY billing_info
+    ADD CONSTRAINT billing_info_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: company_integration_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY company_integration
+    ADD CONSTRAINT company_integration_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: company_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY company
+    ADD CONSTRAINT company_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: integration_module_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY integration_module
+    ADD CONSTRAINT integration_module_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: integration_token_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY integration_token
+    ADD CONSTRAINT integration_token_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: invitation_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY invitation
+    ADD CONSTRAINT invitation_pkey PRIMARY KEY (code);
+
+
+--
+-- Name: invoice_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY invoice
+    ADD CONSTRAINT invoice_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: payment_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY payment
+    ADD CONSTRAINT payment_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (sess_id);
+
+
+--
+-- Name: usr_company_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY usr_company
+    ADD CONSTRAINT usr_company_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: usr_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY usr
+    ADD CONSTRAINT usr_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: widget_pkey; Type: CONSTRAINT; Schema: public; Owner: wethod; Tablespace: 
+--
+
+ALTER TABLE ONLY widget
+    ADD CONSTRAINT widget_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_790cadce979b1ad6; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE INDEX idx_790cadce979b1ad6 ON usr_company USING btree (company_id);
+
+
+--
+-- Name: idx_790cadcec69d3fb; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE INDEX idx_790cadcec69d3fb ON usr_company USING btree (usr_id);
+
+
+--
+-- Name: idx_90651744979b1ad6; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE INDEX idx_90651744979b1ad6 ON invoice USING btree (company_id);
+
+
+--
+-- Name: idx_e438d5034fbf094f; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE INDEX idx_e438d5034fbf094f ON company_integration USING btree (company);
+
+
+--
+-- Name: idx_e438d503fd7a943d; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE INDEX idx_e438d503fd7a943d ON company_integration USING btree (integration_module);
+
+
+--
+-- Name: idx_f11d61a2979b1ad6; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE INDEX idx_f11d61a2979b1ad6 ON invitation USING btree (company_id);
+
+
+--
+-- Name: idx_f11d61a2c69d3fb; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE INDEX idx_f11d61a2c69d3fb ON invitation USING btree (usr_id);
+
+
+--
+-- Name: uniq_1762498c92fc23a8; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_1762498c92fc23a8 ON usr USING btree (username_canonical);
+
+
+--
+-- Name: uniq_1762498ca0d96fbf; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_1762498ca0d96fbf ON usr USING btree (email_canonical);
+
+
+--
+-- Name: uniq_800230d3b4fb0f90; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_800230d3b4fb0f90 ON company USING btree (billing_info);
+
+
+--
+-- Name: uniq_85f91ed08a90aba9; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_85f91ed08a90aba9 ON widget USING btree (key);
+
+
+--
+-- Name: uniq_9065174496901f54; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_9065174496901f54 ON invoice USING btree (number);
+
+
+--
+-- Name: uniq_90651744bfa226be; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_90651744bfa226be ON invoice USING btree (stripe_invoice);
+
+
+--
+-- Name: uniq_a295bd914fbf094f; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_a295bd914fbf094f ON payment USING btree (company);
+
+
+--
+-- Name: uniq_d567f6ea5f37a13b; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_d567f6ea5f37a13b ON integration_token USING btree (token);
+
+
+--
+-- Name: uniq_e438d503d567f6ea; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_e438d503d567f6ea ON company_integration USING btree (integration_token);
+
+
+--
+-- Name: uniq_fd7a943d8a90aba9; Type: INDEX; Schema: public; Owner: wethod; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uniq_fd7a943d8a90aba9 ON integration_module USING btree (key);
+
+
+--
+-- Name: fk_790cadce979b1ad6; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY usr_company
+    ADD CONSTRAINT fk_790cadce979b1ad6 FOREIGN KEY (company_id) REFERENCES company(id) ON DELETE CASCADE;
+
+
+--
+-- Name: fk_790cadcec69d3fb; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY usr_company
+    ADD CONSTRAINT fk_790cadcec69d3fb FOREIGN KEY (usr_id) REFERENCES usr(id) ON DELETE CASCADE;
+
+
+--
+-- Name: fk_800230d3b4fb0f90; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY company
+    ADD CONSTRAINT fk_800230d3b4fb0f90 FOREIGN KEY (billing_info) REFERENCES billing_info(id) ON DELETE SET NULL;
+
+
+--
+-- Name: fk_90651744979b1ad6; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY invoice
+    ADD CONSTRAINT fk_90651744979b1ad6 FOREIGN KEY (company_id) REFERENCES company(id) ON DELETE SET NULL;
+
+
+--
+-- Name: fk_a295bd914fbf094f; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY payment
+    ADD CONSTRAINT fk_a295bd914fbf094f FOREIGN KEY (company) REFERENCES company(id) ON DELETE CASCADE;
+
+
+--
+-- Name: fk_e438d5034fbf094f; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY company_integration
+    ADD CONSTRAINT fk_e438d5034fbf094f FOREIGN KEY (company) REFERENCES company(id) ON DELETE CASCADE;
+
+
+--
+-- Name: fk_e438d503d567f6ea; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY company_integration
+    ADD CONSTRAINT fk_e438d503d567f6ea FOREIGN KEY (integration_token) REFERENCES integration_token(id) ON DELETE SET NULL;
+
+
+--
+-- Name: fk_e438d503fd7a943d; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY company_integration
+    ADD CONSTRAINT fk_e438d503fd7a943d FOREIGN KEY (integration_module) REFERENCES integration_module(id) ON DELETE CASCADE;
+
+
+--
+-- Name: fk_f11d61a2979b1ad6; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY invitation
+    ADD CONSTRAINT fk_f11d61a2979b1ad6 FOREIGN KEY (company_id) REFERENCES company(id) ON DELETE CASCADE;
+
+
+--
+-- Name: fk_f11d61a2c69d3fb; Type: FK CONSTRAINT; Schema: public; Owner: wethod
+--
+
+ALTER TABLE ONLY invitation
+    ADD CONSTRAINT fk_f11d61a2c69d3fb FOREIGN KEY (usr_id) REFERENCES usr(id) ON DELETE CASCADE;
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
