@@ -54,7 +54,7 @@ run_command "git flow release finish -m '$VERSION'" "finishing release '$VERSION
 
 unset GIT_MERGE_AUTOEDIT
 
-run_command "git push origin --tags" "pushing repo ..."
+run_command "git push -u origin master --tags" "pushing master ..."
 
 #perchè ssh funzioni bisogna abilitare bitbucket clone tramite ssh, non https come è ora
 
