@@ -25,6 +25,9 @@ fi
 # exit when any command fails
 set -e
 
+# avoid editor invokation for merge
+export GIT_MERGE_AUTOEDIT=no
+
 # Format the given version as Git tag
 VERSION="v$1"
 SENTRY_VERSION="reffable_web-'$VERSION'"
@@ -39,7 +42,9 @@ echo "creating release '$VERSION' ..." && git flow release start "$VERSION"
 
 #echo "associating commints with Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases set-commits "$SENTRY_VERSION" --auto
 
-echo "finishing release '$VERSION' ..." && git flow release finish "$VERSION"
+echo "finishing release '$VERSION' ..." && git flow release finish -m "$VERSION"
+
+unset GIT_MERGE_AUTOEDIT
 
 git push origin --tags
 
