@@ -29,6 +29,8 @@ set -e
 VERSION="v$1"
 SENTRY_VERSION="reffable_web-'$VERSION'"
 
+echo "changing branch to develop ..." && git checkout develop
+
 echo "creating release '$VERSION' ..." && git flow release start "$VERSION"
 
 #echo "creating Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases new "$SENTRY_VERSION"
@@ -39,7 +41,7 @@ echo "creating release '$VERSION' ..." && git flow release start "$VERSION"
 
 echo "finishing release '$VERSION' ..." && git flow release finish "$VERSION"
 
-git push
+git push origin --tags
 
 #perchè ssh funzioni bisogna abilitare bitbucket clone tramite ssh, non https come è ora
 
