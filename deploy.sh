@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# show MESSAGE while running COMMAND, COMMAND stdout is hidden
+run_command() {
+  COMMAND="$1"
+  MESSAGE="$2"
+
+  echo "$MESSAGE" && "$COMMAND" >/dev/null
+}
+
 # check if git-flow command installed
 git-flow &>/dev/null
 
@@ -32,9 +40,9 @@ export GIT_MERGE_AUTOEDIT=no
 VERSION="v$1"
 SENTRY_VERSION="reffable_web-'$VERSION'"
 
-echo "changing branch to develop ..." && git checkout develop &>/dev/null
+run_command "git checkout develop" "changing branch to develop ..."
 
-echo "creating release '$VERSION' ..." && git flow release start "$VERSION" &>/dev/null
+run_command "git flow release start '$VERSION'" "creating release '$VERSION' ..."
 
 #echo "creating Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases new "$SENTRY_VERSION"
 
@@ -42,11 +50,11 @@ echo "creating release '$VERSION' ..." && git flow release start "$VERSION" &>/d
 
 #echo "associating commints with Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases set-commits "$SENTRY_VERSION" --auto
 
-echo "finishing release '$VERSION' ..." && git flow release finish -m "$VERSION" &>/dev/null
+run_command "git flow release finish -m '$VERSION'" "finishing release '$VERSION' ..."
 
 unset GIT_MERGE_AUTOEDIT
 
-git push origin --tags &>/dev/null
+run_command "git push origin --tags" "pushing repo ..."
 
 #perchè ssh funzioni bisogna abilitare bitbucket clone tramite ssh, non https come è ora
 
