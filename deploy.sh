@@ -5,7 +5,7 @@ run_command() {
   COMMAND="$1"
   MESSAGE="$2"
 
-  echo "$MESSAGE" && "$COMMAND" >/dev/null
+  echo "$MESSAGE" && $COMMAND >/dev/null
 }
 
 # check if git-flow command installed
