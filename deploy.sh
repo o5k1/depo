@@ -42,6 +42,7 @@ SENTRY_VERSION="depo-'$VERSION'"
 
 export SENTRY_AUTH_TOKEN=11db4445f6264ad38962708257aeefd5d50d82576c884765a6f9a312c799afff
 export SENTRY_ORG=reffable
+export SENTRY_PROJECT=depo
 
 run_command "git checkout develop" "changing branch to develop ..."
 
