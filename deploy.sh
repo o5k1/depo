@@ -38,11 +38,15 @@ export GIT_MERGE_AUTOEDIT=no
 
 # Format the given version as Git tag
 VERSION="v$1"
-SENTRY_VERSION="reffable_web-'$VERSION'"
+SENTRY_VERSION="depo-'$VERSION'"
 
 run_command "git checkout develop" "changing branch to develop ..."
 
 run_command "git flow release start '$VERSION'" "creating release '$VERSION' ..."
+
+run_command "npm --no-git-tag-version version from-git" "updating package.json version ..."
+
+run_command "npm run build" "building src ..."
 
 #echo "creating Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases new "$SENTRY_VERSION"
 
