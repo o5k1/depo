@@ -40,19 +40,20 @@ export GIT_MERGE_AUTOEDIT=no
 VERSION="v$1"
 SENTRY_VERSION="depo-'$VERSION'"
 
+export SENTRY_AUTH_TOKEN=11db4445f6264ad38962708257aeefd5d50d82576c884765a6f9a312c799afff
+export SENTRY_ORG=reffable
+
 run_command "git checkout develop" "changing branch to develop ..."
 
 run_command "git flow release start '$VERSION'" "creating release '$VERSION' ..."
 
 run_command "npm --no-git-tag-version version from-git" "updating package.json version ..."
 
-run_command "npm run build" "building src ..."
+run_command "sentry-cli releases new '$SENTRY_VERSION'" "creating Sentry release '$SENTRY_VERSION' ..."
 
-#echo "creating Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases new "$SENTRY_VERSION"
+run_command "npm run build" "building '$VERSION' ..."
 
-#echo "building '$VERSION' ..." && npm run build
-
-#echo "associating commints with Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases set-commits "$SENTRY_VERSION" --auto
+run_command "sentry-cli releases set-commits '$SENTRY_VERSION' --auto" "associating commits with Sentry release '$SENTRY_VERSION' ..."
 
 run_command "git flow release finish -m '$VERSION'" "finishing release '$VERSION' ..."
 
@@ -66,5 +67,9 @@ run_command "git push -u origin master --tags" "pushing master ..."
 
 #echo "finalizing Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases finalize "$SENTRY_VERSION"
 
+run_command "sentry-cli releases finalize '$SENTRY_VERSION'" "finalizing Sentry release '$SENTRY_VERSION' ..."
+
 echo "Deploy completed."
+
+
 
