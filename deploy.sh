@@ -48,7 +48,7 @@ run_command "git checkout develop" "changing branch to develop ..."
 
 run_command "git flow release start '$VERSION'" "creating release '$VERSION' ..."
 
-run_command "npm --no-git-tag-version version '$1'" "updating package.json version ..."
+run_command "npm --no-git-tag-version version $VERSION" "updating package.json version ..."
 
 run_command "sentry-cli releases new '$SENTRY_VERSION'" "creating Sentry release '$SENTRY_VERSION' ..."
 
