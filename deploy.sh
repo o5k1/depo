@@ -25,16 +25,16 @@ fi
 # exit when any command fails
 set -e
 
-# avoid editor invokation for merge
+# avoid editor invocation for merge
 export GIT_MERGE_AUTOEDIT=no
 
 # Format the given version as Git tag
 VERSION="v$1"
 SENTRY_VERSION="reffable_web-'$VERSION'"
 
-echo "changing branch to develop ..." && git checkout develop
+echo "changing branch to develop ..." && git checkout develop &>/dev/null
 
-echo "creating release '$VERSION' ..." && git flow release start "$VERSION"
+echo "creating release '$VERSION' ..." && git flow release start "$VERSION" &>/dev/null
 
 #echo "creating Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases new "$SENTRY_VERSION"
 
@@ -42,11 +42,11 @@ echo "creating release '$VERSION' ..." && git flow release start "$VERSION"
 
 #echo "associating commints with Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases set-commits "$SENTRY_VERSION" --auto
 
-echo "finishing release '$VERSION' ..." && git flow release finish -m "$VERSION"
+echo "finishing release '$VERSION' ..." && git flow release finish -m "$VERSION" &>/dev/null
 
 unset GIT_MERGE_AUTOEDIT
 
-git push origin --tags
+git push origin --tags &>/dev/null
 
 #perchè ssh funzioni bisogna abilitare bitbucket clone tramite ssh, non https come è ora
 
