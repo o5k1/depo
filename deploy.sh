@@ -54,7 +54,7 @@ run_command "git flow release start '$VERSION'" "creating release '$VERSION' ...
 
 run_command "npm --no-git-tag-version version $VERSION" "updating package.json version ..."
 
-run_command "git add package.json && git commit -m 'update package.json version to $VERSION'"
+run_command "git add package.json"
 
 run_command "git commit -m 'update package.json version to $VERSION'"
 
