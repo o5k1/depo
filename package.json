@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "node build.js"
+    "build": "node build.js",
+    "deploy": "sh deploy.sh"
   },
   "repository": {
     "type": "git",
