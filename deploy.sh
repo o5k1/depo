@@ -56,6 +56,10 @@ run_command "npm --no-git-tag-version version $VERSION" "updating package.json v
 
 run_command "git add package.json && git commit -m 'update package.json version to $VERSION'"
 
+run_command "git commit -m 'update package.json version to $VERSION'"
+
+exit 1;
+
 run_command "sentry-cli releases new $SENTRY_VERSION" "creating Sentry release '$SENTRY_VERSION' ..."
 
 run_command "npm run build" "building '$VERSION' ..."
