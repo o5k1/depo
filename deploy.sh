@@ -54,17 +54,13 @@ run_command "git flow release start '$VERSION'" "creating release '$VERSION' ...
 
 run_command "npm --no-git-tag-version version $VERSION" "updating package.json version ..."
 
-run_command "git add package.json"
-
-run_command "git commit -m 'update package.json version to $VERSION'"
-
-exit 1;
+git add package.json && git commit -m 'update package.json version to $VERSION'
 
 run_command "sentry-cli releases new $SENTRY_VERSION" "creating Sentry release '$SENTRY_VERSION' ..."
 
 run_command "npm run build" "building '$VERSION' ..."
 
-run_command "git add index.html && git commit -m 'build'"
+git add index.html && git commit -m 'build'
 
 run_command "sentry-cli releases set-commits $SENTRY_VERSION --auto" "associating commits with Sentry release '$SENTRY_VERSION' ..."
 
