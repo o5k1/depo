@@ -50,11 +50,15 @@ run_command "git flow release start '$VERSION'" "creating release '$VERSION' ...
 
 run_command "npm --no-git-tag-version version $VERSION" "updating package.json version ..."
 
-run_command "sentry-cli releases new '$SENTRY_VERSION'" "creating Sentry release '$SENTRY_VERSION' ..."
+run_command "git add package.json && git commit -m 'update package.json version to $VERSION'"
+
+run_command "sentry-cli releases new $SENTRY_VERSION" "creating Sentry release '$SENTRY_VERSION' ..."
 
 run_command "npm run build" "building '$VERSION' ..."
 
-run_command "sentry-cli releases set-commits '$SENTRY_VERSION' --auto" "associating commits with Sentry release '$SENTRY_VERSION' ..."
+run_command "git add index.html && git commit -m 'build'"
+
+run_command "sentry-cli releases set-commits $SENTRY_VERSION --auto" "associating commits with Sentry release '$SENTRY_VERSION' ..."
 
 run_command "git flow release finish -m '$VERSION'" "finishing release '$VERSION' ..."
 
@@ -68,7 +72,7 @@ run_command "git push -u origin master --tags" "pushing master ..."
 
 #echo "finalizing Sentry release '$SENTRY_VERSION' ..." && sentry-cli releases finalize "$SENTRY_VERSION"
 
-run_command "sentry-cli releases finalize '$SENTRY_VERSION'" "finalizing Sentry release '$SENTRY_VERSION' ..."
+run_command "sentry-cli releases finalize $SENTRY_VERSION" "finalizing Sentry release '$SENTRY_VERSION' ..."
 
 echo "Deploy completed."
 
