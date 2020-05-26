@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://browser.sentry-cdn.com/5.15.5/bundle.min.js" integrity="sha384-wF7Jc4ZlWVxe/L8Ji3hOIBeTgo/HwFuaeEfjGmS3EXAG7Y+7Kjjr91gJpJtr+PAT" crossorigin="anonymous">
+</script>
+</head>
+<body>
+
+<h1>v2.0.2</h1>
+
+<button type="button" onclick="throw Error">Create error</button>
+
+<script type="text/javascript">
+	Sentry.init({
+		dsn: 'https://de51775e0bb14f0bb21781a7b7fa08c7@o395786.ingest.sentry.io/5252714', 
+		release: "depo" + '-' + "2.1.10" });
+</script>
+</body>
+</html>
