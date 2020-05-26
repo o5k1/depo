@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-# import var from .env file
-cat .env
-
 # show MESSAGE while running COMMAND, COMMAND stdout is hidden
 run_command() {
   COMMAND="$1"
   MESSAGE="$2"
+
+  echo $COMMAND
 
   echo "$MESSAGE" && $COMMAND >/dev/null
 }
@@ -46,11 +45,14 @@ SENTRY_VERSION="depo@$VERSION"
 export SENTRY_ORG=reffable
 export SENTRY_PROJECT=depo
 
+# import var from .env file
+run_command "cat .env"
+
 run_command "git checkout develop" "changing branch to develop ..."
 
 run_command "git flow release start '$VERSION'" "creating release '$VERSION' ..."
 
-run_command "npm --no-git-tag-version version '$VERSION'" "updating package.json version ..."
+run_command "npm --no-git-tag-version version $VERSION" "updating package.json version ..."
 
 run_command "git add package.json && git commit -m 'update package.json version to $VERSION'"
 
